@@ -1,8 +1,8 @@
-# Thong Tin Deploy - Checkpoint 5
+# Thông Tin Deploy - Checkpoint 5
 
-## Thong Tin Hoc Vien
+## Thông Tin Học Viên
 
-| Muc | Noi dung |
+| Mục | Nội dung |
 |-----|----------|
 | Họ và tên | Trần Ngọc Khánh |
 | Mã học viên | 2A202602923 |
@@ -10,26 +10,26 @@
 
 ## Service
 
-| Muc | Noi dung |
+| Mục | Nội dung |
 |-----|----------|
 | Public URL | https://agent-production-d5c9.up.railway.app |
 | Platform | Railway |
-| Ngay deploy | 2026-09-29 |
+| Ngày deploy | 2026-09-29 |
 
-## Bien Moi Truong Da Set Tren Cloud
+## Biến Môi Trường Đã Set Trên Cloud
 
-Tai lieu chi ghi ten bien va nguon cap, khong ghi gia tri secret.
+Tài liệu chỉ ghi tên biến và nguồn cấp, không ghi giá trị secret.
 
-| Bien | Da set | Nguon |
+| Biến | Đã set | Nguồn |
 |------|--------|-------|
-| `PORT` | Co | Railway tu gan |
-| `AGENT_API_KEY` | Co | Railway Variables, gia tri duoc dat qua stdin |
-| `REDIS_URL` | Co | Tham chieu noi bo den Railway Redis add-on |
-| `RATE_LIMIT_PER_MINUTE` | Co | Railway Variables |
-| `MONTHLY_BUDGET_USD` | Co | Railway Variables |
-| `LOG_LEVEL` | Co | Railway Variables |
+| `PORT` | Có | Railway tự gán |
+| `AGENT_API_KEY` | Có | Railway Variables, giá trị được đặt qua stdin |
+| `REDIS_URL` | Có | Tham chiếu nội bộ đến Railway Redis add-on |
+| `RATE_LIMIT_PER_MINUTE` | Có | Railway Variables |
+| `MONTHLY_BUDGET_USD` | Có | Railway Variables |
+| `LOG_LEVEL` | Có | Railway Variables |
 
-## Lenh Kiem Tra
+## Lệnh Kiểm Tra
 
 ```bash
 curl -i https://agent-production-d5c9.up.railway.app/health
@@ -39,10 +39,10 @@ curl -i -X POST https://agent-production-d5c9.up.railway.app/ask \
   -d '{"question":"Hello"}'
 ```
 
-Request co xac thuc duoc chay bang API key lay tu secret local, khong ghi gia
-tri khoa vao tai lieu nay.
+Request có xác thực được chạy bằng API key lấy từ secret local, không ghi giá
+trị khóa vào tài liệu này.
 
-## Ket Qua Chay That
+## Kết Quả Chạy Thật
 
 ```text
 GET /health
@@ -53,25 +53,40 @@ GET /ready
 STATUS=200
 BODY={"status":"ready","redis":true}
 
-POST /ask khong co API key
+POST /ask không có API key
 STATUS=401
 
-POST /ask co API key
+POST /ask có API key
 STATUS=200
-BODY co answer, user_id, history_length, cost_usd va tokens.
+BODY có answer, user_id, history_length, cost_usd và tokens.
 
-Rate limit, 12 request lien tiep voi cung user
+Rate limit, 12 request liên tiếp với cùng user
 200 200 200 200 200 200 200 200 200 200 429 429
 ```
 
-## Anh Chup Man Hinh
+## Ảnh Chụp Màn Hình
 
-- `screenshots/dashboard.png`: Railway project gom service `agent` va `Redis`.
-- `screenshots/health.png`: ket qua goi public endpoint `/health`.
+- `screenshots/dashboard.png`: Railway project gồm service `agent` và `Redis`.
+- `screenshots/health.png`: kết quả gọi public endpoint `/health`.
 
-## Ghi Chu Van Hanh
+## Ghi Chú Vận Hành
 
-- Agent duoc build tu Dockerfile multi-stage trong repository.
-- Redis chay bang Railway Redis add-on va chi duoc truy cap qua private network.
-- Railway cap bien `PORT`; Uvicorn bind `0.0.0.0` va doc cong nay khi khoi dong.
-- Health check cua Railway dung endpoint `/health`.
+- Agent được build từ Dockerfile multi-stage trong repository.
+- Redis chạy bằng Railway Redis add-on và chỉ được truy cập qua private network.
+- Railway cấp biến `PORT`; Uvicorn bind `0.0.0.0` và đọc cổng này khi khởi động.
+- Health check của Railway dùng endpoint `/health`.
+
+## Bonus - CI/CD Với GitHub Actions
+
+- Workflow: `.github/workflows/ci.yml`.
+- Chạy tự động khi push hoặc mở pull request vào nhánh `main`.
+- Job `test` cài dependency và chạy các test không phụ thuộc bản deploy.
+- Job `build` build Docker image trên GitHub runner.
+- Job `deploy` chỉ chạy khi `test` và `build` thành công, đồng thời chỉ chạy
+  khi push vào `main`.
+- Railway token được lưu trong GitHub Actions Secret `RAILWAY_TOKEN`, không nằm
+  trong repository.
+- Sau deploy, workflow gọi `${{ vars.PUBLIC_URL }}/health` để smoke test.
+- GitHub Actions run `CI #1` đã hoàn thành thành công trên nhánh `main`.
+- Kết quả kiểm tra local: `pytest tests/test_bonus_cicd.py -v` đạt `13/13` test.
+- Badge trạng thái CI được hiển thị ở đầu `README.md` và đang báo `passing`.
